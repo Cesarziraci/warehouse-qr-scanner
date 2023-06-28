@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv,atlas,json
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.1
+version = 0.5
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -37,7 +37,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy, pyzbar, gspread,oauth2client,google,google-auth,google-auth-oauthlib,httplib2,cachetools,pyasn1,pyasn1_modules,rsa, requests,google-auth-httplib2,openssl,google-api-python-client,credentials,urllib3,requests_oauthlib,oauthlib,pyparsing,numpy, opencv-python
+requirements = python3,kivy, pyzbar, gspread,oauth2client,google,google-auth,google-auth-oauthlib,httplib2,pyasn1,rsa,google-auth-httplib2,openssl,google-api-python-client,credentials,urllib3,requests_oauthlib,oauthlib,pyparsing,numpy,opencv
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -101,7 +101,7 @@ android.permissions = android.permission.INTERNET, (name=android.permission.WRIT
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 31
+android.api = 33
 
 # (int) Minimum API your APK / AAB will support.
 #android.minapi = 21
@@ -110,7 +110,7 @@ android.permissions = android.permission.INTERNET, (name=android.permission.WRIT
 #android.sdk = 20
 
 # (str) Android NDK version to use
-#android.ndk = 23b
+android.ndk = 25b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 #android.ndk_api = 21
