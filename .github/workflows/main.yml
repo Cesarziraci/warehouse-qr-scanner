@@ -1,25 +1,26 @@
-name: Build
+name: Build & Publish Release APK
+
 on:
   push:
+    tags:
+      - '*'
 
 jobs:
-# Build job. Builds app for Android with Buildozer
-build-android:
-  name: Build for Android
-  runs-on: ubuntu-latest
-
-  steps:
-    - name: Checkout
+  Gradle:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout code
       uses: actions/checkout@v2
-
-    - name: Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
+    - name: setup jdk
+      uses: actions/setup-java@v1
       with:
-        workdir: <specify the directory of the app no don't mention this the app files are in root directory>
-        buildozer_version: stable
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: package
+        java-version: 11
+    - name: Make Gradle executable
+      run: chmod +x ./gradlew
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+    - name: Releasing using Hub
+      uses: r0user/release-apk@main
+      env:
+       GITHUB_TOKEN: ${{ secrets.TOKEN }}
+       APP_FOLDER: app
