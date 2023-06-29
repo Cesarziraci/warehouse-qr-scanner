@@ -1,7 +1,6 @@
 import kivy 
 import gspread
 import cv2 
-import time
 from pyzbar.pyzbar import decode 
 from oauth2client.service_account import ServiceAccountCredentials
 kivy.require('2.2.0')
@@ -13,28 +12,31 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup 
 from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
+from kivy.graphics.texture import Texture 
+from kivy.clock import Clock
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_name("qrscanner-390410-60be511e0f54.json", scope)
 client = gspread.authorize(creds)
 s = client.open('Almacen')
+found = set()
+outputtext=''
 
 class Box01(GridLayout):
     
     def __init__(self):
         super(Box01,self).__init__()
         self.cam = cv2.VideoCapture(0)
-        self.cam.set(5, 640)
-        self.cam.set(6, 480)
+        self.cam.set(3, 1280)
+        self.cam.set(4, 720)
+        self.img = Image()
         self.sheet3 = s.worksheet("Hoja 2")
         self.sheet1 = s.worksheet("Hoja 1")
 
         self.cols = 1
         self.row = 3
-        self.size_hint = (0.6, 0.7)
-        self.pos_hint = {"center_x": 0.5, "center_y": 0.5}
         self.qr_model = ''
+        self.pop= Popup(title = "Escaneando",content=self.img)
         
         self.name = TextInput(
             multiline = False,
@@ -66,7 +68,7 @@ class Box01(GridLayout):
         self.add_widget(self.Camera)
 
         self.Camera.bind(
-            on_press=self.Open_Camera
+            on_press=self.open_Camera
             )
         self.Camera.disabled
 
@@ -91,21 +93,54 @@ class Box01(GridLayout):
 
         self.add_widget(self.Submit)
         self.Submit.bind(on_press=self.Guardar_sheet)
+    
+    def open_Camera(self, *args):
+        self.pop.open()
+        Clock.schedule_interval(self.dec,1/30)
 
     def dec(self,qr_model):
-        while True:
-            suceess, frame= self.cam.read()
-            for i in decode(frame):
-                qr_model = i.data.decode('utf-8')
-                time.sleep(6)
 
-                cv2.waitKey(100)
-                cv2.destroyAllWindows
+            togglfag = True
+            if togglfag == True :
+                ret, frame = self.cam.read()
+                togglfag = False
+
+            if ret:
+                buf1 = cv2.flip(frame,0)
+                buf = buf1.tostring()
+                image_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr')
+                image_texture.blit_buffer(buf,colorfmt='bgr',bufferfmt='ubyte')
+                self.img.texture = image_texture
+
+                QR_decode = decode(frame)
+                togglfag = True
+
+                for code in QR_decode:
+                    (x,y,w,h) = code.rect
+                    cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255),2)
+
+                    self.qr_model = code.data.decode('utf-8')
+                    qr_type = code.type
+                    self.text = "{} ({})".format(qr_model,qr_type)
+                    
+                    if self.qr_model not in found:
+                        found.add(self.qr_model)
+                        if self.qr_model == ' ':
+                            self.pop.dismiss()
+                            self.stop_camera
+                            self.Aviso_pop("Escaneo incorrecto")
+                        else:
+                            self.Aviso_pop(self.qr_model)
+                            self.pop.dismiss()
+                            self.stop_camera
+                
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("q"):
+                    cv2.destroyAllWindows()
+                    exit(0)
             
-            break
-        cv2.waitKey(100)
-        cv2.destroyAllWindows()
-        return qr_model
+    def stop_camera(self, *args):
+        self.cam.release()
 
     def buscar_vacia(self,sheet):
         j = 1
@@ -131,13 +166,6 @@ class Box01(GridLayout):
                     return 0
                 else:
                     return 1
-
-    def Open_Camera(self,Instance):
-            self.qr_model=self.dec('')
-            if self.qr_model == '':
-                self.Aviso("Escaneo incorrecto")
-            else:
-                self.Aviso(self.qr_model)
 
     def Guardar_sheet(self,instance):   
              
@@ -174,7 +202,7 @@ class Box01(GridLayout):
 
                 self.sheet1.update_cell(b[0],b[1],b[2])
 
-                self.Aviso("Hecho")
+                self.Aviso_pop("Hecho")
 
                 if self.aviso(self.qr_model, self.sheet1) == 0 :
                     self.Error("No queda Stock")
@@ -184,18 +212,18 @@ class Box01(GridLayout):
             except TypeError:
                 self.Error("No hay en inventario")
       
-    def Aviso(self, text):
+    def Aviso_pop(self, text):
         layout = GridLayout(cols = 1, padding = 10)
 
         popupLabel = Label(text = text)
         closeButton = Button(text = "cerrar")
-  
+    
         layout.add_widget(popupLabel)
 
         layout.add_widget(closeButton)   
-  
+    
         popup = Popup(title = "Aviso!",
-                      content = layout)  
+                        content = layout)  
         popup.open()   
 
         closeButton.bind(on_press = popup.dismiss)
