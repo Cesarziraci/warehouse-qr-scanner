@@ -26,17 +26,16 @@ class Box01(GridLayout):
     
     def __init__(self):
         super(Box01,self).__init__()
+        
         self.cam = cv2.VideoCapture(0)
         self.cam.set(3, 1280)
         self.cam.set(4, 720)
         self.img = Image()
-        self.sheet3 = s.worksheet("Hoja 2")
-        self.sheet1 = s.worksheet("Hoja 1")
+        self.qr_model = ''
+        self.pop= Popup(title = "Escaneando",content=self.img)
 
         self.cols = 1
         self.row = 3
-        self.qr_model = ''
-        self.pop= Popup(title = "Escaneando",content=self.img)
         
         self.name = TextInput(
             multiline = False,
@@ -127,20 +126,19 @@ class Box01(GridLayout):
                         found.add(self.qr_model)
                         if self.qr_model == ' ':
                             self.pop.dismiss()
-                            self.stop_camera
+                            togglfag = True
                             self.Aviso_pop("Escaneo incorrecto")
+                            self.qr_model = ' '
                         else:
                             self.Aviso_pop(self.qr_model)
                             self.pop.dismiss()
-                            self.stop_camera
+                            self.cam.release()
+                            self.qr_model = ' '
                 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q"):
                     cv2.destroyAllWindows()
                     exit(0)
-            
-    def stop_camera(self, *args):
-        self.cam.release()
 
     def buscar_vacia(self,sheet):
         j = 1
@@ -170,12 +168,13 @@ class Box01(GridLayout):
     def Guardar_sheet(self,instance):   
              
         layout = GridLayout(cols = 1, padding = 10)
-        popup = Popup(title = "Aviso!",
-                      content = layout)  
+        popup = Popup(title = "Guardar",
+                      content = layout, 
+                      size_hint = (.5,.5))  
 
         popupLabel = Label(text = "Vas a retirar "+ self.Cantidad.text +" de " + self.qr_model+" estas seguro?")
-        yesbutton = Button(text = "Si")
-        closeButton = Button(text = "No")
+        yesbutton = Button(text = "Si",size_hint = (.3,.3))
+        closeButton = Button(text = "No",size_hint = (.3,.3))
         
         layout.add_widget(popupLabel)
         layout.add_widget(yesbutton)
@@ -189,60 +188,63 @@ class Box01(GridLayout):
         closeButton.bind(on_press = popup.dismiss)
 
     def datos(self,instance):
+        
+        sheet3 = s.worksheet("Hoja 2")
+        sheet1 = s.worksheet("Hoja 1")
+
         if self.name.text == '':
             self.Error("Introducir nombre")
         else:
             try:
                 print("datos")
-                a = self.buscar_vacia(self.sheet3)
-                b = self.buscar_y_cambiar(self.qr_model, int(self.Cantidad.text),self.sheet1)
-                self.sheet3.update_cell(a,1,self.name.text)
-                self.sheet3.update_cell(a,2,self.qr_model)
-                self.sheet3.update_cell(a,3, int(self.Cantidad.text)) 
+                a = self.buscar_vacia(sheet3)
+                b = self.buscar_y_cambiar(self.qr_model, int(self.Cantidad.text),sheet1)
+                sheet3.update_cell(a,1,self.name.text)
+                sheet3.update_cell(a,2,self.qr_model)
+                sheet3.update_cell(a,3, int(self.Cantidad.text)) 
 
-                self.sheet1.update_cell(b[0],b[1],b[2])
+                sheet1.update_cell(b[0],b[1],b[2])
 
                 self.Aviso_pop("Hecho")
 
-                if self.aviso(self.qr_model, self.sheet1) == 0 :
+                if self.aviso(self.qr_model, sheet1) == 0 :
                     self.Error("No queda Stock")
 
             except ValueError or NameError:
                 self.Error("introducir cantidad a retirar")
             except TypeError:
-                self.Error("No hay en inventario")
+                self.Error("No inventariado")
       
     def Aviso_pop(self, text):
         layout = GridLayout(cols = 1, padding = 10)
+        popup = Popup(title = "Aviso!",
+                        content = layout,
+                      size_hint = (.5,.5))  
 
         popupLabel = Label(text = text)
-        closeButton = Button(text = "cerrar")
+        closeButton = Button(text = "cerrar",size_hint = (.3,.3))
     
         layout.add_widget(popupLabel)
 
         layout.add_widget(closeButton)   
     
-        popup = Popup(title = "Aviso!",
-                        content = layout)  
         popup.open()   
 
         closeButton.bind(on_press = popup.dismiss)
    
     def Error(self, text):
-        layout = GridLayout(cols = 1, padding = 10)
+        layout = GridLayout(cols = 1, padding = 10)  
+        popup = Popup(title = "Error",
+                      content = layout,
+                      size_hint=(.5,.5))  
   
         popupLabel = Label(text = text)
-        closeButton = Button(text = "Cerrar")
+        closeButton = Button(text = "Cerrar", size_hint = (.3,.3))
   
         layout.add_widget(popupLabel)
-        layout.add_widget(closeButton)       
-  
-        # Instantiate the modal popup and display
-        popup = Popup(title = "Error",
-                      content = layout)  
+        layout.add_widget(closeButton)     
         popup.open()   
   
-        # Attach close button press with popup.dismiss action
         closeButton.bind( on_press = popup.dismiss )
 
 
