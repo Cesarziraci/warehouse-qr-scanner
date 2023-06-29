@@ -30,7 +30,9 @@ class Box01(GridLayout):
         self.cam = cv2.VideoCapture(0)
         self.cam.set(3, 1280)
         self.cam.set(4, 720)
+
         self.img = Image()
+
         self.qr_model = ''
         self.pop= Popup(title = "Escaneando",content=self.img)
 
@@ -119,8 +121,6 @@ class Box01(GridLayout):
                     cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,255),2)
 
                     self.qr_model = code.data.decode('utf-8')
-                    qr_type = code.type
-                    self.text = "{} ({})".format(qr_model,qr_type)
                     
                     if self.qr_model not in found:
                         found.add(self.qr_model)
@@ -132,11 +132,10 @@ class Box01(GridLayout):
                         else:
                             self.Aviso_pop(self.qr_model)
                             self.pop.dismiss()
-                            self.cam.release()
-                            self.qr_model = ' '
                 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q"):
+                    self.cam.release()
                     cv2.destroyAllWindows()
                     exit(0)
 
@@ -206,6 +205,7 @@ class Box01(GridLayout):
                 sheet1.update_cell(b[0],b[1],b[2])
 
                 self.Aviso_pop("Hecho")
+                self.qr_model = ' '
 
                 if self.aviso(self.qr_model, sheet1) == 0 :
                     self.Error("No queda Stock")
