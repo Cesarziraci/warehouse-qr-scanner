@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Escaner QR
+title = Sigit Escaner
 
 # (str) Package name
-package.name = EscanerQr
+package.name = SigitScanner
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -13,7 +13,7 @@ package.domain = org.test
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,png,jpg,kv,atlas, json
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -29,7 +29,7 @@ source.include_exts = py,png,jpg,kv,atlas,json
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.5
+version = 2.0
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -37,7 +37,7 @@ version = 0.5
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy, pyzbar, gspread,oauth2client,google,google-auth,google-auth-oauthlib,httplib2,pyasn1,rsa,google-auth-httplib2,openssl,google-api-python-client,credentials,urllib3,requests_oauthlib,oauthlib,pyparsing,numpy,opencv
+requirements = python3,kivy, pyzbar, gspread,oauth2client,google,google-auth,google-auth-oauthlib,httplib2,pyasn1,rsa,google-auth-httplib2,openssl,google-api-python-client,credentials,urllib3,requests_oauthlib,oauthlib,pyparsing, cachetools,pyasn1_modules, PIL
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -47,7 +47,7 @@ requirements = python3,kivy, pyzbar, gspread,oauth2client,google,google-auth,goo
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = icon.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
@@ -67,7 +67,7 @@ orientation = portrait
 osx.python_version = 3
 
 # Kivy version to use
-osx.kivy_version = 1.9.1
+osx.kivy_version = 2.2.0
 
 #
 # Android specific
@@ -101,7 +101,7 @@ android.permissions = android.permission.INTERNET,android.permission.CAMERA, (na
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-android.api = 33
+#android.api = 31
 
 # (int) Minimum API your APK / AAB will support.
 #android.minapi = 21
@@ -110,13 +110,13 @@ android.api = 33
 #android.sdk = 20
 
 # (str) Android NDK version to use
-android.ndk = 25b
+#android.ndk = 25b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 #android.ndk_api = 21
 
 # (bool) Use --private data storage (True) or --dir public storage (False)
-android.private_storage = True
+#android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
 #android.ndk_path =
