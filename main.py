@@ -325,14 +325,14 @@ class AnadirScreen(Screen):
         Aviso_pop(self.qr_model)
         
     def Guardar_sheet(self):
-        temp = int(self.ids.cantidad.text)
-
-        try:
-            guardar(self.qr_model, temp , "Silvia","Ingreso",0)
-        except (ValueError, NameError):
-            error("Introducir cantidad a retirar")
-
-        self.qr_model = ' '
+    	if self.ids.cantidad.text == ' ':
+    		error("Introducir Cantidad a Introducir")
+    	else:
+    		try:
+    			guardar(self.qr_model, temp, "Silvia", "Ingreso", 0)
+    			self.qr_model = ' '
+    		except (ValueError, NameError):
+    			error("Introducir Cantidad a Introducir")
 
 class RetirarScreen(Screen):
     qr_model = ''
