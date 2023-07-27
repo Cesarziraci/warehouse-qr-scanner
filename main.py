@@ -49,7 +49,6 @@ Builder.load_string('''
             resolution: (640, 480)
             play: False
             canvas.before:
-                PushMatrix
                 Rotate:
                     angle: -90
                     origin: self.center
@@ -131,9 +130,9 @@ Builder.load_string('''
             bold: True
             font_size: 70
         Button:
-            id: añadir
+            id: anadir
             text: 'Añadir material'
-            on_press: root.añ()
+            on_press: root.an()
             height: '48dp'
             size_hint: .5, .75
             pos_hint: {"center_x": .5, "center_y": .5}
@@ -288,7 +287,7 @@ Builder.load_string('''
 class MainScreen(Screen):
     def ret(self):
         self.manager.current = 'retirar'
-    def añ(self):
+    def an(self):
         self.manager.current = 'contrasena' 
 
 class Contrasena(Screen):
@@ -325,8 +324,8 @@ class AnadirScreen(Screen):
         Aviso_pop(self.qr_model)
         
     def Guardar_sheet(self):
-        if self.ids.cantidad.text == ' ':
-            error("Ingresa Cantidad a Introducir")
+        if self.qr_model == '':
+            error("Escanea alguna pieza primero")
         else:
             try:
                 temp = int(self.ids.cantidad.text)
@@ -347,7 +346,9 @@ class RetirarScreen(Screen):
         Aviso_pop(self.qr_model)
         
     def Guardar_sheet(self):
-        if  self.ids.uso.text == '':
+        if self.qr_model == '':
+            error("Escanea alguna pieza primero")
+        elif  self.ids.uso.text == '':
             error("Introduce el uso de la pieza")
         elif self.ids.name.text == '':
             error("Introducir nombre")
@@ -422,7 +423,7 @@ def stock(qr_model, sheet):
             if int(sheet.cell(Model.row, stock_col).value) < int(sheet.cell(Model.row, 6).value):
                 comprar = int(sheet.cell(Model.row, 6).value) - int(sheet.cell(Model.row, stock_col).value)  
                 error("Material bajo minimos, avisar al responsable")
-                message = "El stock de {} esta por debajo del minimo, compra minimo {}".format(qr_model, comprar)
+                message = "El stock de {} esta por debajo del minimo, compra minimo {}".format(sheet.cell(Model.row, Model.col-1).value, comprar)
                 msg.attach(MIMEText(message, 'plain'))
                 server.sendmail(msg["From"], msg["To"],msg.as_string())
                 server.quit()
@@ -433,7 +434,7 @@ def guardar(qr_model, cantidad, name,uso, state):
                     content=layout,
                     size_hint=(.8, .8))
     if state == 1:
-        texto = "Vas a retirar {} de {} ¿estás seguro?".format(cantidad, qr_model)
+        texto = "Vas a retirar {} de {} \n \t ¿estás seguro?".format(cantidad, qr_model)
         popupLabel = Label(text=texto)
         yesbutton = Button(text="Si", size_hint=(.3, .3))
         closeButton = Button(text="No", size_hint=(.3, .3))
@@ -450,7 +451,7 @@ def guardar(qr_model, cantidad, name,uso, state):
 
     else:
 
-        texto="Vas a ingresar {} de {} ¿estás seguro?".format(cantidad, qr_model)
+        texto="Vas a ingresar {} de {} \n \t ¿estás seguro?".format(cantidad, qr_model)
         popupLabel = Label(text=texto)
         yesbutton = Button(text="Si", size_hint=(.3, .3))
         closeButton = Button(text="No", size_hint=(.3, .3))
