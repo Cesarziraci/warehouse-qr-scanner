@@ -408,12 +408,10 @@ def buscar_vacia(sheet):
             return j
 
 def buscar_y_cambiar_retirar(qr_model, qr_value, sheet):
-    for i in sheet.col_values(2):
-        if i == qr_model:
-            cell = sheet.find(qr_model)
-            stock = sheet.cell(cell.row, cell.col + 2).value
-            resultado = int(stock) - qr_value
-            return [cell.row, cell.col + 2, resultado]
+    cell = sheet.find(qr_model)
+    stock = sheet.cell(cell.row, cell.col + 2).value
+    resultado = int(stock) - qr_value
+    return [cell.row, cell.col + 2, resultado]
 
 def stock(qr_model, sheet):
     for i in sheet.col_values(2):
