@@ -41,76 +41,14 @@ server.starttls()
 server.login(msg["From"],password)
 
 Builder.load_string('''
-<CameraScreen>:
-    BoxLayout:
-        orientation: 'vertical'    
-        Camera:
-            id: camera
-            resolution: (640, 480)
-            play: False
-            canvas.before:
-                Rotate:
-                    angle: -90
-                    origin: self.center
-<Contrasena>:    
-    BoxLayout:
-        orientation: 'vertical'
-        padding: 40
-        spacing: 40
-        canvas:
-            Color: 
-                rgb: 1, 1, 1
-            Rectangle:
-                size: self.size
-                pos: self.pos
-        Image: 
-            source: 'SIGIT.png'
-            size_hint_x: 0.21
-            allow_stretch: True
-        Label: 
-            text: 'Contraseña: '
-            color: 0,0,0
-            size_hint: .5, .95
-            font_size: 50
-            markup: True
-            size: self.texture_size
-            bold: True
 
-        TextInput:
-            id: pas
-            pos_hint: {'center_x': 0.5, 'center_y': 0.705}
-            size_hint: .5, .95
-            focus: True
-            multiline: False
-            password: True
-                    
-        Button:
-            id: comp
-            text: 'Entrar'
-            on_press: root.Comp()
-            height: '48dp'
-            size_hint: .5, .95
-            pos_hint: {"center_x": .5, "center_y": .5}
-            bold: True
-            font_size: 50
-                    
-        Button:
-            id: vol
-            text: 'Volver'
-            on_press: root.volver()
-            height: '48dp'
-            size_hint: .5, .95
-            pos_hint: {"center_x": .5, "center_y": .5}
-            bold: True
-            font_size: 50
 
-        
 <MainScreen>:
     GridLayout:
-        padding: 50
-        spacing: 50
-        cols: 1
-        rows:3
+        padding: 45
+        spacing: 45
+        cols : 1
+        rows: 3
     
         canvas:
             Color: 
@@ -118,8 +56,12 @@ Builder.load_string('''
             Rectangle:
                 size: self.size
                 pos: self.pos
+
         Image: 
             source: 'SIGIT.png'
+            size_hint_x: 0.23
+            allow_stretch: True
+        
         Button:
             id: retirar
             text: 'Retirar material'
@@ -223,6 +165,56 @@ Builder.load_string('''
             bold: True
             font_size: 40
     
+<Contrasena>:    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 40
+        canvas:
+            Color: 
+                rgb: 1, 1, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Label: 
+            text: 'Contraseña: '
+            color: 0,0,0
+            size_hint: .5, .95
+            font_size: 50
+            markup: True
+            size: self.texture_size
+            bold: True
+
+        TextInput:
+            id: pas
+            pos_hint: {'center_x': 0.5, 'center_y': 0.705}
+            size_hint: .5, .95
+            focus: True
+            multiline: False
+            password: True
+                    
+        Button:
+            id: comp
+            text: 'Entrar'
+            on_press: root.Comp()
+            height: '48dp'
+            size_hint: .5, .95
+            pos_hint: {"center_x": .5, "center_y": .5}
+            bold: True
+            font_size: 50
+                    
+        Button:
+            id: vol
+            text: 'Volver'
+            on_press: root.volver()
+            height: '48dp'
+            size_hint: .5, .95
+            pos_hint: {"center_x": .5, "center_y": .5}
+            bold: True
+            font_size: 50
+    
+    
+    
 <AnadirScreen>:
     GridLayout:
         cols:1
@@ -275,12 +267,28 @@ Builder.load_string('''
             bold: True
             font_size: 50
 
+
+<CameraScreen>:
+    BoxLayout:
+        orientation: 'vertical'    
+        Camera:
+            id: camera
+            resolution: (640, 480)
+            play: False
+            canvas.before:
+                Rotate:
+                    angle: -90
+                    origin: self.center
+
 <ScreenManager>:
+
     MainScreen:
-    Contrasena:
     RetirarScreen:
+    Contrasena:
     AnadirScreen:
     CameraScreen:
+    
+    
 '''
 )
 
@@ -408,10 +416,14 @@ def buscar_vacia(sheet):
             return j
 
 def buscar_y_cambiar_retirar(qr_model, qr_value, sheet):
-    cell = sheet.find(qr_model)
-    stock = sheet.cell(cell.row, cell.col + 2).value
-    resultado = int(stock) - qr_value
-    return [cell.row, cell.col + 2, resultado]
+	try:
+		cell = sheet.find(qr_model)
+		stock = sheet.cell(cell.row, cell.col + 2).value
+		resultado = int(stock) - qr_value
+		return [cell.row, cell.col + 2, resultado]
+		
+	except AttributeError:
+		return 0
 
 def stock(qr_model, sheet):
     for i in sheet.col_values(2):
@@ -472,6 +484,7 @@ def datos(qr_model,cantidad,name,uso,state):
         Time = ctime()
         a = buscar_vacia(sheet3)
         b = buscar_y_cambiar_retirar(qr_model, int(cantidad), sheet1)
+        
         sheet3.update_cell(a, 2, name)
         sheet3.update_cell(a, 3, qr_model)
 
@@ -482,13 +495,17 @@ def datos(qr_model,cantidad,name,uso,state):
 
         sheet3.update_cell(a, 1, Time)
         sheet3.update_cell(a, 5, uso)
-        sheet1.update_cell(b[0], b[1], b[2])
-
+        
+        if b == 0:
+        	Aviso_pop("No esta en el inventario")
+        else:
+        	sheet1.update_cell(b[0], b[1], b[2])
+	
         stock(qr_model, sheet1)
         Aviso_pop("Hecho")
-    
+    	
     except (TypeError):
-        error("No en inventario")
+        error("Error Avisa al encargado")
 
 def Aviso_pop(text):
     layout = GridLayout(cols=1, padding=10)
@@ -541,3 +558,4 @@ class mainApp(App):
 
 if __name__ == '__main__':
     mainApp().run()
+    
