@@ -438,7 +438,7 @@ def stock(qr_model, sheet):
             if int(sheet.cell(Model.row, stock_col).value) < int(sheet.cell(Model.row, 6).value):
                 comprar = int(sheet.cell(Model.row, 6).value) - int(sheet.cell(Model.row, stock_col).value)  
                 message = "El stock de {} esta por debajo del minimo, compra minimo {}".format(sheet.cell(Model.row, Model.col-1).value, comprar)
-            	error("Material bajo minimos, avisar al responsable", 'Aviso!',1)
+                error("Material Bajo Minimos \n avisar al responsable", 'Aviso!',1)
                 msg.attach(MIMEText(message, 'plain'))
                 server.sendmail(msg["From"], msg["To"],msg.as_string())
                 server.quit()
@@ -450,7 +450,12 @@ def guardar(qr_model, cantidad, name,uso, state):
                     content=layout,
                     size_hint=(.8, .8))
     
-    texto = "Vas a {} {} de {} \n ¿estás seguro?".format(state,cantidad, qr_model)
+    sheet1 = s.worksheet("Hoja 1")
+    cell = sheet1.find(qr_model)
+    cell_value = sheet1.cell(cell.row, cell.col-1).value
+    
+    texto = "Vas a {} {} de {} \n ¿estás seguro?".format(state, cantidad, cell_value)
+    
     popupLabel = Label(text=texto)
     yesbutton = Button(text="Si", size_hint=(.3, .3))
     closeButton = Button(text="No", size_hint=(.3, .3))
@@ -483,13 +488,16 @@ def datos(qr_model,cantidad,name,uso,state):
 
         sheet3.update_cell(a, 1, Time)
         sheet3.update_cell(a, 5, uso)
-        sheet1.update_cell(b[0], b[1], b[2])
+        if b == 0:
+        	error("No esta en el inventario \n avisa al responsable", 'Error', 1)
+        else:
+        	sheet1.update_cell(b[0], b[1], b[2])
 
         stock(qr_model, sheet1)
         error("Hecho", '', 0)
     
-    except (TypeError):
-        error("No en inventario", 'Error', 0)
+    except (TypeError, AttributeError):
+        error("No esta en el inventario \n avisa al responsable", 'Error', 0)
 
 def error(text, tittle, state):
     layout = GridLayout(cols=1, padding=10)
@@ -512,7 +520,7 @@ def error(text, tittle, state):
 
 
 #######################################################
-######						  #####
+#######################################################
 #######################################################
 
 class splashscreen(Screen):
@@ -541,6 +549,8 @@ class mainApp(App):
 	
 	def change(self,instance):
 		self.sm.current = 'main'
-		
+
+
 if __name__ == '__main__':
     mainApp().run()
+  
