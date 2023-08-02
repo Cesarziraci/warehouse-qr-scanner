@@ -3,9 +3,9 @@ import gspread
 from PIL import Image
 from pyzbar.pyzbar import decode
 from oauth2client.service_account import ServiceAccountCredentials
+from kivy.config import Config
 
 kivy.require('2.0.0')
-from kivy.config import Config
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
@@ -13,9 +13,9 @@ from kivy.uix.button import Button
 from kivy.uix.popup import Popup
 from kivy.clock import Clock
 from kivy.lang import Builder
-from kivy.core.window import Window
+from kivy.core.window import Window 
 from kivy.uix.screenmanager import Screen, ScreenManager
-from time import ctime
+from time import ctime,sleep
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import smtplib
@@ -45,76 +45,14 @@ server.starttls()
 server.login(msg["From"],password)
 
 Builder.load_string('''
-<CameraScreen>:
-    BoxLayout:
-        orientation: 'vertical'    
-        Camera:
-            id: camera
-            resolution: (640, 480)
-            play: False
-            canvas.before:
-                Rotate:
-                    angle: -90
-                    origin: self.center
-<Contrasena>:    
-    BoxLayout:
-        orientation: 'vertical'
-        padding: 40
-        spacing: 40
-        canvas:
-            Color: 
-                rgb: 1, 1, 1
-            Rectangle:
-                size: self.size
-                pos: self.pos
-        Image: 
-            source: 'SIGIT.png'
-            size_hint_x: 0.21
-            allow_stretch: True
-        Label: 
-            text: 'Contraseña: '
-            color: 0,0,0
-            size_hint: .5, .95
-            font_size: 50
-            markup: True
-            size: self.texture_size
-            bold: True
 
-        TextInput:
-            id: pas
-            pos_hint: {'center_x': 0.5, 'center_y': 0.705}
-            size_hint: .5, .95
-            focus: True
-            multiline: False
-            password: True
-                    
-        Button:
-            id: comp
-            text: 'Entrar'
-            on_press: root.Comp()
-            height: '48dp'
-            size_hint: .5, .95
-            pos_hint: {"center_x": .5, "center_y": .5}
-            bold: True
-            font_size: 50
-                    
-        Button:
-            id: vol
-            text: 'Volver'
-            on_press: root.volver()
-            height: '48dp'
-            size_hint: .5, .95
-            pos_hint: {"center_x": .5, "center_y": .5}
-            bold: True
-            font_size: 50
 
-        
 <MainScreen>:
     GridLayout:
-        padding: 50
-        spacing: 50
-        cols: 1
-        rows:3
+        padding: 45
+        spacing: 45
+        cols : 1
+        rows: 3
     
         canvas:
             Color: 
@@ -122,8 +60,12 @@ Builder.load_string('''
             Rectangle:
                 size: self.size
                 pos: self.pos
+
         Image: 
             source: 'SIGIT.png'
+            size_hint_x: 0.23
+            allow_stretch: True
+        
         Button:
             id: retirar
             text: 'Retirar material'
@@ -133,6 +75,7 @@ Builder.load_string('''
             pos_hint: {"center_x": .5, "center_y": .5}
             bold: True
             font_size: 70
+            
         Button:
             id: anadir
             text: 'Añadir material'
@@ -200,7 +143,7 @@ Builder.load_string('''
             pos_hint: {'center_x': 0.5, 'center_y': 0.705}
             size_hint: .5, .85 
             focus: True
-            multiline: False  
+            multiline: False
         
         Label: 
             text: 'Uso: '
@@ -226,6 +169,56 @@ Builder.load_string('''
             pos_hint: {"center_x": .5, "center_y": .5}
             bold: True
             font_size: 40
+    
+<Contrasena>:    
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 40
+        canvas:
+            Color: 
+                rgb: 1, 1, 1
+            Rectangle:
+                size: self.size
+                pos: self.pos
+        Label: 
+            text: 'Contraseña: '
+            color: 0,0,0
+            size_hint: .5, .95
+            font_size: 50
+            markup: True
+            size: self.texture_size
+            bold: True
+
+        TextInput:
+            id: pas
+            pos_hint: {'center_x': 0.5, 'center_y': 0.705}
+            size_hint: .5, .95
+            focus: True
+            multiline: False
+            password: True
+                    
+        Button:
+            id: comp
+            text: 'Entrar'
+            on_press: root.Comp()
+            height: '48dp'
+            size_hint: .5, .95
+            pos_hint: {"center_x": .5, "center_y": .5}
+            bold: True
+            font_size: 50
+                    
+        Button:
+            id: vol
+            text: 'Volver'
+            on_press: root.volver()
+            height: '48dp'
+            size_hint: .5, .95
+            pos_hint: {"center_x": .5, "center_y": .5}
+            bold: True
+            font_size: 50
+    
+    
     
 <AnadirScreen>:
     GridLayout:
@@ -279,12 +272,28 @@ Builder.load_string('''
             bold: True
             font_size: 50
 
+
+<CameraScreen>:
+    BoxLayout:
+        orientation: 'vertical'    
+        Camera:
+            id: camera
+            resolution: (640, 480)
+            play: False
+            canvas.before:
+                Rotate:
+                    angle: -90
+                    origin: self.center
+
 <ScreenManager>:
+
     MainScreen:
-    Contrasena:
     RetirarScreen:
+    Contrasena:
     AnadirScreen:
     CameraScreen:
+    
+    
 '''
 )
 
@@ -412,12 +421,14 @@ def buscar_vacia(sheet):
             return j
 
 def buscar_y_cambiar_retirar(qr_model, qr_value, sheet):
-    for i in sheet.col_values(2):
-        if i == qr_model:
-            cell = sheet.find(qr_model)
-            stock = sheet.cell(cell.row, cell.col + 2).value
-            resultado = int(stock) - qr_value
-            return [cell.row, cell.col + 2, resultado]
+	try:
+		cell = sheet.find(qr_model)
+		stock = sheet.cell(cell.row, cell.col + 2).value
+		resultado = int(stock) - qr_value
+		return [cell.row, cell.col + 2, resultado]
+		
+	except AttributeError:
+		return 0
 
 def stock(qr_model, sheet):
     for i in sheet.col_values(2):
@@ -431,7 +442,7 @@ def stock(qr_model, sheet):
                 server.sendmail(msg["From"], msg["To"],msg.as_string())
                 server.quit()
                 return 0
-
+                
 def guardar(qr_model, cantidad, name,uso, state):
     layout = GridLayout(cols=1, padding=10)
     popup = Popup(title="Guardar",
@@ -498,7 +509,7 @@ def error(text, tittle, state):
     popup.open()
 
     if state == 0:
-        closeButton.bind(on_press = lambda x: RetirarScreen.switch_screen)
+        print(0)
 
     closeButton.bind(on_press=popup.dismiss)
 
@@ -507,18 +518,34 @@ def error(text, tittle, state):
 #######################################################
 #######################################################
 
+class splashscreen(Screen):
+	pass
+
 class mainApp(App):
-    title = "Escanner QR"
+	title = "Escanner QR"
+	sm = ScreenManager()
 
-    def build(self):
-        sm = ScreenManager()
-        sm.add_widget(MainScreen(name='main'))
-        sm.add_widget(Contrasena(name='contrasena'))
-        sm.add_widget(RetirarScreen(name='retirar'))
-        sm.add_widget(AnadirScreen(name = 'anadir'))
-        sm.add_widget(CameraScreen(name='camera'))
+	def build(self):
+		self.sm.add_widget(splashscreen(name = 'splash'))
+		self.sm.add_widget(MainScreen(name='main'))
+		self.sm.add_widget(RetirarScreen(name='retirar'))
+		self.sm.add_widget(AnadirScreen(name = 'anadir'))
+		self.sm.add_widget(Contrasena(name='contrasena'))
+		self.sm.add_widget(CameraScreen(name='camera'))
 
-        return sm
+		self.show_splash()
+
+		return self.sm
+		
+	def show_splash(self):
+		self.sm.current = 'splash'
+		Clock.schedule_once(self.change,2)
+		
+	
+	def change(self,instance):
+		self.sm.current = 'main'
+
 
 if __name__ == '__main__':
     mainApp().run()
+    
