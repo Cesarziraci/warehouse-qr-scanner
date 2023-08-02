@@ -438,6 +438,7 @@ def stock(qr_model, sheet):
             if int(sheet.cell(Model.row, stock_col).value) < int(sheet.cell(Model.row, 6).value):
                 comprar = int(sheet.cell(Model.row, 6).value) - int(sheet.cell(Model.row, stock_col).value)  
                 message = "El stock de {} esta por debajo del minimo, compra minimo {}".format(sheet.cell(Model.row, Model.col-1).value, comprar)
+            	error("Material bajo minimos, avisar al responsable", 'Aviso!',1)
                 msg.attach(MIMEText(message, 'plain'))
                 server.sendmail(msg["From"], msg["To"],msg.as_string())
                 server.quit()
@@ -484,11 +485,7 @@ def datos(qr_model,cantidad,name,uso,state):
         sheet3.update_cell(a, 5, uso)
         sheet1.update_cell(b[0], b[1], b[2])
 
-        st = stock(qr_model, sheet1)
-
-        if st == 0:
-            error("Material bajo minimos, avisar al responsable", 'Aviso!',1)
-
+        stock(qr_model, sheet1)
         error("Hecho", '', 0)
     
     except (TypeError):
@@ -515,7 +512,7 @@ def error(text, tittle, state):
 
 
 #######################################################
-#######################################################
+######						  #####
 #######################################################
 
 class splashscreen(Screen):
@@ -544,8 +541,6 @@ class mainApp(App):
 	
 	def change(self,instance):
 		self.sm.current = 'main'
-
-
+		
 if __name__ == '__main__':
     mainApp().run()
-    
