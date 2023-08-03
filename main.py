@@ -36,8 +36,8 @@ s = client.open('AlmacenManto')
 msg = MIMEMultipart()
 
 password = "gvhgxumlugjmtbhp"
-msg['From'] = "maintenancealmacen@gmail.com"
-msg['To'] = "silvia.vicen@sigit.es"
+msg['From'] = "correo0"
+msg['To'] = "correo"
 msg['subject']= "Stock Almacen"
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
