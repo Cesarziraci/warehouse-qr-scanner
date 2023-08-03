@@ -32,6 +32,8 @@ scope = [
 creds = ServiceAccountCredentials.from_json_keyfile_name("sigit-apps-cc25c0f862ec.json", scope)
 client = gspread.authorize(creds)
 s = client.open('AlmacenManto')
+sheet3 = s.worksheet("Hoja 2")
+sheet1 = s.worksheet("Hoja 1")
 
 msg = MIMEMultipart()
 
@@ -445,8 +447,6 @@ def guardar(qr_model, cantidad, name,uso, state):
 	popup = Popup(title="Guardar",
 		    content=layout,
 		    size_hint=(.8, .8))
-		    
-	sheet1 = s.worksheet("Hoja 1")
 	try:
 		cell = sheet1.find(qr_model)
 		cell_value = sheet1.cell(cell.row, cell.col-1).value
@@ -478,8 +478,7 @@ def guardar(qr_model, cantidad, name,uso, state):
 	yesbutton.bind(on_press=popup.dismiss)
 
 def datos(qr_model,cantidad,name,uso, state):
-    sheet3 = s.worksheet("Hoja 2")
-    sheet1 = s.worksheet("Hoja 1")
+	
     try:
         Time = ''
         Time = ctime()
