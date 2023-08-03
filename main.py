@@ -36,8 +36,8 @@ s = client.open('AlmacenManto')
 msg = MIMEMultipart()
 
 password = "gvhgxumlugjmtbhp"
-msg['From'] = "correo0"
-msg['To'] = "correo"
+msg['From'] = "maintenancealmacen@gmail.com"
+msg['To'] = "silvia.vicen@sigit.es"
 msg['subject']= "Stock Almacen"
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -472,28 +472,35 @@ def guardar(qr_model, cantidad, name,uso, state):
 
 	popup.open()
 	closeButton.bind(on_press=popup.dismiss)
-
-	yesbutton.bind(on_press=lambda x:datos(qr_model,cantidad,name,uso,state = 1))
+	
+	if state == 'Ingresar':
+		terminal = 1
+	else:
+		terminal = 0
+		
+	yesbutton.bind(on_press=lambda x:datos(qr_model,cantidad,name,uso,terminal))
 	yesbutton.bind(on_press=popup.dismiss)
 
-def datos(qr_model,cantidad,name,uso,state):
+def datos(qr_model,cantidad,name,uso, state):
     sheet3 = s.worksheet("Hoja 2")
     sheet1 = s.worksheet("Hoja 1")
     try:
         Time = ''
         Time = ctime()
         a = buscar_vacia(sheet3)
-        b = buscar_y_cambiar_retirar(qr_model, int(cantidad), sheet1)
         sheet3.update_cell(a, 2, name)
         sheet3.update_cell(a, 3, qr_model)
 
         if state == 1:
-            sheet3.update_cell(a, 4, -int(cantidad))
+            sheet3.update_cell(a, 4, int(cantidad))
+            b = buscar_y_cambiar_retirar(qr_model, -1*int(cantidad), sheet1)
         else:
             sheet3.update_cell(a,4, -1*int(cantidad))
+            b = buscar_y_cambiar_retirar(qr_model, -1*int(cantidad), sheet1)
 
         sheet3.update_cell(a, 1, Time)
         sheet3.update_cell(a, 5, uso)
+        
         if b == 0:
         	error("No esta en el inventario \n avisa al responsable", 'Error')
         else:
@@ -559,4 +566,3 @@ class mainApp(App):
 
 if __name__ == '__main__':
     mainApp().run()
-    
