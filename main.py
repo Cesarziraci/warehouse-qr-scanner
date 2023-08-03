@@ -36,8 +36,8 @@ s = client.open('AlmacenManto')
 msg = MIMEMultipart()
 
 password = "gvhgxumlugjmtbhp"
-msg['From'] = "maintenancealmacen@gmail.com"
-msg['To'] = "silvia.vicen@sigit.es"
+msg['From'] = " "
+msg['To'] = " "
 msg['subject']= "Stock Almacen"
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -45,7 +45,6 @@ server.starttls()
 server.login(msg["From"],password)
 
 Builder.load_string('''
-
 
 <MainScreen>:
     GridLayout:
@@ -85,7 +84,6 @@ Builder.load_string('''
             pos_hint: {"center_x": .5, "center_y": .5}
             bold: True
             font_size: 70
-
 
 <RetirarScreen>:
     GridLayout:
@@ -272,7 +270,6 @@ Builder.load_string('''
             bold: True
             font_size: 50
 
-
 <CameraScreen>:
     BoxLayout:
         orientation: 'vertical'    
@@ -292,7 +289,6 @@ Builder.load_string('''
     Contrasena:
     AnadirScreen:
     CameraScreen:
-    
     
 '''
 )
@@ -424,7 +420,7 @@ def buscar_y_cambiar_retirar(qr_model, qr_value, sheet):
 	try:
 		cell = sheet.find(qr_model)
 		stock = sheet.cell(cell.row, cell.col + 2).value
-		resultado = int(stock) - qr_value
+		resultado = int(stock) - int(qr_value)
 		return [cell.row, cell.col + 2, resultado]
 		
 	except AttributeError:
@@ -478,7 +474,7 @@ def guardar(qr_model, cantidad, name,uso, state):
 	else:
 		terminal = 0
 		
-	yesbutton.bind(on_press=lambda x:datos(qr_model,cantidad,name,uso,terminal))
+	yesbutton.bind(on_press=lambda x:datos(qr_model,int(cantidad),name,uso,terminal))
 	yesbutton.bind(on_press=popup.dismiss)
 
 def datos(qr_model,cantidad,name,uso, state):
@@ -496,7 +492,7 @@ def datos(qr_model,cantidad,name,uso, state):
             b = buscar_y_cambiar_retirar(qr_model, -1*int(cantidad), sheet1)
         else:
             sheet3.update_cell(a,4, -1*int(cantidad))
-            b = buscar_y_cambiar_retirar(qr_model, -1*int(cantidad), sheet1)
+            b = buscar_y_cambiar_retirar(qr_model, int(cantidad), sheet1)
 
         sheet3.update_cell(a, 1, Time)
         sheet3.update_cell(a, 5, uso)
@@ -508,7 +504,6 @@ def datos(qr_model,cantidad,name,uso, state):
 
         stock(qr_model, sheet1)
         error("Hecho", '')
-        self.manager.current = 'main' 
         
     except (TypeError, AttributeError):
         error("Error 102, Avisa al responsable", 'Error')
@@ -530,12 +525,10 @@ def error(text, tittle):
     closeButton.bind(on_oress = popup.dismiss)
     popup.open()
 
-
     closeButton.bind(on_press=popup.dismiss)
 
-
 #######################################################
-#######################################################
+###                                                  ##
 #######################################################
 
 class splashscreen(Screen):
@@ -566,3 +559,4 @@ class mainApp(App):
 
 if __name__ == '__main__':
     mainApp().run()
+    
