@@ -334,18 +334,18 @@ class AnadirScreen(Screen):
 
     def set_qr_model(self, qr_code_data):
         self.qr_model = qr_code_data
-        error(self.qr_model,'QR ESCANEADO', 1)
+        error(self.qr_model,'QR ESCANEADO')
         
     def Guardar_sheet(self):
         if self.qr_model == '':
-            error("Escanea alguna pieza primero",'Error',1)
+            error("Escanea alguna pieza primero",'Error')
         else:
             try:
                 temp = int(self.ids.cantidad.text)
                 guardar(self.qr_model, temp, "Ingreso", "Ingreso", 'Ingresar')
                 self.qr_model = ' '
             except (ValueError, NameError):
-                error("Ingresa Cantidad a Introducir",'Error',1)
+                error("Ingresa Cantidad a Introducir",'Error')
 
 class RetirarScreen(Screen):
     qr_model = ''
@@ -356,20 +356,20 @@ class RetirarScreen(Screen):
 
     def set_qr_model(self, qr_code_data):
         self.qr_model = qr_code_data
-        error(self.qr_model,'QR ESCANEADO',1)
+        error(self.qr_model,'QR ESCANEADO')
         
     def Guardar_sheet(self):
         if self.qr_model == '':
-            error("Escanea alguna pieza primero", 'Error', 1)
+            error("Escanea alguna pieza primero", 'Error')
         elif  self.ids.uso.text == '':
-            error("Introduce el uso de la pieza", 'Error',1)
+            error("Introduce el uso de la pieza", 'Error')
         elif self.ids.name.text == '':
-            error("Introducir nombre", 'Error',1)
+            error("Introducir nombre", 'Error')
         else:
             try:
                 guardar(self.qr_model, int(self.ids.cantidad.text), self.ids.name.text, self.ids.uso.text, 'Retirar')
             except (ValueError, NameError):
-                error("Introducir cantidad a retirar", 'Error',1)
+                error("Introducir cantidad a retirar", 'Error')
         self.qr_model = ' '
 
 class CameraScreen(Screen):
@@ -438,37 +438,43 @@ def stock(qr_model, sheet):
             if int(sheet.cell(Model.row, stock_col).value) < int(sheet.cell(Model.row, 6).value):
                 comprar = int(sheet.cell(Model.row, 6).value) - int(sheet.cell(Model.row, stock_col).value)  
                 message = "El stock de {} esta por debajo del minimo, compra minimo {}".format(sheet.cell(Model.row, Model.col-1).value, comprar)
-                error("Material Bajo Minimos \n avisar al responsable", 'Aviso!',1)
+                error("Material Bajo Minimos \n avisar al responsable", 'Aviso!')
                 msg.attach(MIMEText(message, 'plain'))
                 server.sendmail(msg["From"], msg["To"],msg.as_string())
                 server.quit()
                 return 0
                 
 def guardar(qr_model, cantidad, name,uso, state):
-    layout = GridLayout(cols=1, padding=10)
-    popup = Popup(title="Guardar",
-                    content=layout,
-                    size_hint=(.8, .8))
-    
-    sheet1 = s.worksheet("Hoja 1")
-    cell = sheet1.find(qr_model)
-    cell_value = sheet1.cell(cell.row, cell.col-1).value
-    
-    texto = "Vas a {} {} de {} \n ¿estás seguro?".format(state, cantidad, cell_value)
-    
-    popupLabel = Label(text=texto)
-    yesbutton = Button(text="Si", size_hint=(.3, .3))
-    closeButton = Button(text="No", size_hint=(.3, .3))
+	layout = GridLayout(cols=1, padding=10)
+	popup = Popup(title="Guardar",
+		    content=layout,
+		    size_hint=(.8, .8))
+		    
+	sheet1 = s.worksheet("Hoja 1")
+	try:
+		cell = sheet1.find(qr_model)
+		cell_value = sheet1.cell(cell.row, cell.col-1).value
 
-    layout.add_widget(popupLabel)
-    layout.add_widget(yesbutton)
-    layout.add_widget(closeButton)
+		texto = "Vas a {} {} de {} \n ¿estás seguro?".format(state, cantidad, cell_value)
+		
+	except (TypeError, AttributeError):
+		texto = "Vas a {} {} de {} \n \t ¿estás seguro?".format(state, cantidad, '\n Un material que no esta inventariado')
+	except (NameError, ValueError):
+		error("Error 100, Avisa al responsable", "Error")
+	
+	popupLabel = Label(text=texto)
+	yesbutton = Button(text="Si", size_hint=(.3, .3))
+	closeButton = Button(text="No", size_hint=(.3, .3))
 
-    popup.open()
-    closeButton.bind(on_press=popup.dismiss)
+	layout.add_widget(popupLabel)
+	layout.add_widget(yesbutton)
+	layout.add_widget(closeButton)
 
-    yesbutton.bind(on_press=lambda x:datos(qr_model,cantidad,name,uso,state = 1))
-    yesbutton.bind(on_press=popup.dismiss)
+	popup.open()
+	closeButton.bind(on_press=popup.dismiss)
+
+	yesbutton.bind(on_press=lambda x:datos(qr_model,cantidad,name,uso,state = 1))
+	yesbutton.bind(on_press=popup.dismiss)
 
 def datos(qr_model,cantidad,name,uso,state):
     sheet3 = s.worksheet("Hoja 2")
@@ -489,17 +495,20 @@ def datos(qr_model,cantidad,name,uso,state):
         sheet3.update_cell(a, 1, Time)
         sheet3.update_cell(a, 5, uso)
         if b == 0:
-        	error("No esta en el inventario \n avisa al responsable", 'Error', 1)
+        	error("No esta en el inventario \n avisa al responsable", 'Error')
         else:
         	sheet1.update_cell(b[0], b[1], b[2])
 
         stock(qr_model, sheet1)
-        error("Hecho", '', 0)
-    
+        error("Hecho", '')
+        self.manager.current = 'main' 
+        
     except (TypeError, AttributeError):
-        error("No esta en el inventario \n avisa al responsable", 'Error', 0)
+        error("Error 102, Avisa al responsable", 'Error')
+    except (ValueError, NameError):
+        error("Error 103, Avisa al responsable", 'Error')
 
-def error(text, tittle, state):
+def error(text, tittle):
     layout = GridLayout(cols=1, padding=10)
     popup = Popup(title=tittle,
                  content=layout,
@@ -510,11 +519,10 @@ def error(text, tittle, state):
 
     layout.add_widget(popupLabel)
     layout.add_widget(closeButton)
-
+    
+    closeButton.bind(on_oress = popup.dismiss)
     popup.open()
 
-    if state == 0:
-        print(0)
 
     closeButton.bind(on_press=popup.dismiss)
 
@@ -545,12 +553,10 @@ class mainApp(App):
 	def show_splash(self):
 		self.sm.current = 'splash'
 		Clock.schedule_once(self.change,2)
-		
 	
 	def change(self,instance):
 		self.sm.current = 'main'
 
-
 if __name__ == '__main__':
     mainApp().run()
-  
+    
