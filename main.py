@@ -35,7 +35,7 @@ s = client.open('AlmacenManto')
 
 msg = MIMEMultipart()
 
-password = "gvhgxumlugjmtbhp"
+password = "Pass "
 msg['From'] = " "
 msg['To'] = " "
 msg['subject']= "Stock Almacen"
