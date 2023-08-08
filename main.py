@@ -1,26 +1,23 @@
 import kivy
 import gspread
+import smtplib
 from PIL import Image
+from enum import Enum
+from time import ctime
 from pyzbar.pyzbar import decode
 from oauth2client.service_account import ServiceAccountCredentials
-from kivy.config import Config
 
 kivy.require('2.0.0')
 from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.popup import Popup
 from kivy.clock import Clock
 from kivy.lang import Builder
-from kivy.core.window import Window 
-from kivy.uix.screenmanager import Screen, ScreenManager
-from time import ctime,sleep
-from email.mime.multipart import MIMEMultipart
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.button import Button
 from email.mime.text import MIMEText
-import smtplib
-
-Config.set('kivy','keyboard_mode','systemanddock')
+from kivy.uix.gridlayout import GridLayout
+from email.mime.multipart import MIMEMultipart
+from kivy.uix.screenmanager import Screen, ScreenManager
 
 scope = [
     "https://spreadsheets.google.com/feeds",
@@ -36,10 +33,9 @@ sheet3 = s.worksheet("Hoja 2")
 sheet1 = s.worksheet("Hoja 1")
 
 msg = MIMEMultipart()
-
-password = "Pass "
-msg['From'] = " "
-msg['To'] = " "
+password = "pass"
+msg['From'] = "From"
+msg['To'] = "To"
 msg['subject']= "Stock Almacen"
 
 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -218,8 +214,6 @@ Builder.load_string('''
             bold: True
             font_size: 50
     
-    
-    
 <AnadirScreen>:
     GridLayout:
         cols:1
@@ -357,18 +351,25 @@ class RetirarScreen(Screen):
         error(self.qr_model,'QR ESCANEADO')
         
     def Guardar_sheet(self):
+        Errores = Enum('Errores', ['QR','USO','Nombre','OK'])
+
         if self.qr_model == '':
-            error("Escanea alguna pieza primero", 'Error')
+            Error = Errores.QR.name
         elif  self.ids.uso.text == '':
-            error("Introduce el uso de la pieza", 'Error')
+            Error = Errores.Nombre.name
         elif self.ids.name.text == '':
-            error("Introducir nombre", 'Error')
+            Error = Errores.USO.name
+        else:
+            Error = Errores.OK.name
+
+        if Error != 'OK':
+            error("Error, Introduce {}".format(Error.lower()), 'Error')
         else:
             try:
                 guardar(self.qr_model, int(self.ids.cantidad.text), self.ids.name.text, self.ids.uso.text, 'Retirar')
-            except (ValueError, NameError):
+                self.qr_model = ''
+            except ValueError:
                 error("Introducir cantidad a retirar", 'Error')
-        self.qr_model = ' '
 
 class CameraScreen(Screen):
     camera_active = False
@@ -447,6 +448,7 @@ def guardar(qr_model, cantidad, name,uso, state):
 	popup = Popup(title="Guardar",
 		    content=layout,
 		    size_hint=(.8, .8))
+		    
 	try:
 		cell = sheet1.find(qr_model)
 		cell_value = sheet1.cell(cell.row, cell.col-1).value
@@ -455,7 +457,7 @@ def guardar(qr_model, cantidad, name,uso, state):
 		
 	except (TypeError, AttributeError):
 		texto = "Vas a {} {} de {} \n \t ¿estás seguro?".format(state, cantidad, '\n Un material que no esta inventariado')
-	except (NameError, ValueError):
+	except (ValueError):
 		error("Error 100, Avisa al responsable", "Error")
 	
 	popupLabel = Label(text=texto)
@@ -478,7 +480,6 @@ def guardar(qr_model, cantidad, name,uso, state):
 	yesbutton.bind(on_press=popup.dismiss)
 
 def datos(qr_model,cantidad,name,uso, state):
-	
     try:
         Time = ''
         Time = ctime()
@@ -497,9 +498,9 @@ def datos(qr_model,cantidad,name,uso, state):
         sheet3.update_cell(a, 5, uso)
         
         if b == 0:
-        	error("No esta en el inventario \n avisa al responsable", 'Error')
+            error("No esta en el inventario \n avisa al responsable", 'Error')
         else:
-        	sheet1.update_cell(b[0], b[1], b[2])
+            sheet1.update_cell(b[0], b[1], b[2])
 
         stock(qr_model, sheet1)
         error("Hecho", '')
@@ -551,7 +552,7 @@ class mainApp(App):
 		
 	def show_splash(self):
 		self.sm.current = 'splash'
-		Clock.schedule_once(self.change,2)
+		Clock.schedule_once(self.change,1)
 	
 	def change(self,instance):
 		self.sm.current = 'main'
@@ -559,3 +560,4 @@ class mainApp(App):
 if __name__ == '__main__':
     mainApp().run()
     
+
